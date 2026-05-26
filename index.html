@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="NEXTPRIME Dashboard">
+
+  <!-- Cache busting -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- iOS / PWA meta -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NEXTPRIME">
+  <meta name="theme-color" content="#111111" />
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.ico" />
+
+  <title>NEXTPRIME</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100vw;
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow: hidden;
+      color: #f8fafc;
+    }
+
+    /* ── Subtle Background Glow ── */
+    #bg-accent {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── Minimalist Loader ── */
+    #loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 10;
+      perspective: 1000px;
+    }
+
+    .logo-container {
+      position: relative;
+      margin-bottom: 40px;
+      animation: floatLogo 3s ease-in-out infinite;
+    }
+
+    .app-logo {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 15px rgba(14, 165, 233, 0.4));
+    }
+
+    .logo-pulse {
+      position: absolute;
+      inset: 0;
+      background: rgba(14, 165, 233, 0.2);
+      border-radius: 50%;
+      filter: blur(25px);
+      z-index: -1;
+      animation: softPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @keyframes softPulse { 0%, 100% { transform: scale(0.85); opacity: 0.2; } 50% { transform: scale(1.15); opacity: 0.6; } }
+
+    /* ── Typography ── */
+    .brand-name {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .brand-accent {
+      color: #0ea5e9;
+      margin-right: -2px;
+    }
+
+    .status-text {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 500;
+      letter-spacing: 1px;
+      margin-bottom: 30px;
+    }
+
+    /* ── Sleek Progress Bar ── */
+    .progress-wrap {
+      width: 260px;
+      height: 5px;
+      background: #1e293b;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8, #0ea5e9);
+      background-size: 200% 100%;
+      border-radius: 10px;
+      animation: slideProgress 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideProgress {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* ── Footer ── */
+    .footer-info {
+      position: fixed;
+      bottom: 40px;
+      font-size: 11px;
+      color: #334155;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="bg-accent"></div>
+
+  <div id="loader">
+    <div class="logo-container">
+      <div class="logo-pulse"></div>
+      <img class="app-logo" src="assets/asset/image/appLogo.png" alt="NEXTPRIME" onerror="this.style.display='none'" />
+    </div>
+
+    <div class="brand-name"><span class="brand-accent">NEXT</span>PRIME</div>
+    <div class="status-text">Synchronizing application core...</div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"></div>
+    </div>
+
+    <div class="footer-info">NEXTPRIME ENTERPRISE DASHBOARD &bull; 2026</div>
+  </div>
+
+
+  <script>
+
+    const EXPECTED_VERSION = '1.0.1'; // Manual version bump
+
+    (async function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceClear = urlParams.get('clear') === 'true';
+      const currentVersion = localStorage.getItem('app_version');
+
+      if (forceClear || currentVersion !== EXPECTED_VERSION) {
+        console.log("Force clear or new version detected. Cleaning everything...");
+        
+        // Clear all local storage
+        localStorage.clear();
+        
+        // Clear all session storage
+        sessionStorage.clear();
+
+        // Clear all caches
+        if ('caches' in window) {
+          const names = await caches.keys();
+          await Promise.all(names.map(name => caches.delete(name)));
+        }
+
+        // Unregister all Service Workers
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (let registration of registrations) {
+            await registration.unregister();
+          }
+        }
+
+        localStorage.setItem('app_version', EXPECTED_VERSION);
+        console.log("Cleanup complete. Reloading...");
+        
+        // Remove the query param and reload
+        if (forceClear) {
+          window.location.href = window.location.origin + window.location.pathname;
+        } else {
+          window.location.reload();
+        }
+      }
+    })();
+
+    function removeLoader() {
+      const loader = document.getElementById("loader");
+      if (loader) {
+        loader.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+        loader.style.opacity = "0";
+        loader.style.transform = "scale(0.95)";
+        setTimeout(() => loader.remove(), 400);
+      }
+    }
+
+    // ✅ Modern reliable way
+    window.addEventListener("load", function () {
+      setTimeout(removeLoader, 1500); // fallback safety
+    });
+
+    // ✅ Try Flutter event (if available)
+    window.addEventListener("flutter-first-frame", removeLoader);
+  </script>
+
+  <!-- Flutter bootstrap -->
+  <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+
+    var serviceWorkerVersion = '"2862654816"';
+
+    window.addEventListener('load', function (ev) {
+      // Modern 2026 Flutter Initialization
+      _flutter.loader.load({
+        serviceWorker: {
+          serviceWorkerUrl: "custom_service_worker.js",
+          serviceWorkerVersion: serviceWorkerVersion,
+          timeout: 30000,
+        },
+        onEntrypointLoaded: async function (engineInitializer) {
+
+          const appRunner = await engineInitializer.initializeEngine({
+            renderer: "skwasm",
+            useColorEmoji: true,
+          });
+
+          // Smoothly remove your custom HTML loader
+          const loader = document.getElementById("loader");
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 400);
+          }
+
+          await appRunner.runApp();
+        }
+      });
+    });
+
+    // Communication for manual updates
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data === 'reload-button-pressed') {
+          window.location.reload();
+        }
+        if (event.data?.type === 'SW_UPDATED') {
+          console.log('New version detected, reloading...');
+          window.location.reload(true);
+        }
+      });
+    }
+  </script>
+
+</body>
+
+</html>
