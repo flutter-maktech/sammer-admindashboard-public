@@ -183,45 +183,51 @@
 
   <script>
 
-    const EXPECTED_VERSION = '1.0.2'; // Manual version bump
-
+    // ── Smart Cache Buster ──
+    // Reads flutter_bootstrap.js (regenerated on each Flutter build) and computes
+    // a hash. If the hash changes, all caches and Service Workers are wiped
+    // automatically — no manual version bumping needed.
     (async function () {
-      const urlParams = new URLSearchParams(window.location.search);
-      const forceClear = urlParams.get('clear') === 'true';
-      const currentVersion = localStorage.getItem('app_version');
+      try {
+        const resp = await fetch('flutter_bootstrap.js', { cache: 'no-store' });
+        const text = await resp.text();
 
-      if (forceClear || currentVersion !== EXPECTED_VERSION) {
-        console.log("Force clear or new version detected. Cleaning everything...");
-        
-        // Clear all local storage
-        localStorage.clear();
-        
-        // Clear all session storage
-        sessionStorage.clear();
-
-        // Clear all caches
-        if ('caches' in window) {
-          const names = await caches.keys();
-          await Promise.all(names.map(name => caches.delete(name)));
+        // Simple djb2-style hash from first 2000 chars
+        let hash = 0;
+        for (let i = 0; i < Math.min(text.length, 2000); i++) {
+          hash = ((hash << 5) - hash) + text.charCodeAt(i);
+          hash |= 0;
         }
+        const newVersion = String(hash);
+        const storedVersion = localStorage.getItem('__app_cache_v__');
 
-        // Unregister all Service Workers
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          for (let registration of registrations) {
-            await registration.unregister();
+        if (storedVersion && storedVersion !== newVersion) {
+          console.log('[CacheBuster] New build detected. Clearing caches & SWs...');
+
+          // 1. Clear all Cache Storage
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(n => caches.delete(n)));
+
+          // 2. Unregister all Service Workers
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister()));
           }
+
+          // 3. Clear session storage
+          sessionStorage.clear();
+
+          // 4. Save new version and hard reload
+          localStorage.setItem('__app_cache_v__', newVersion);
+          console.log('[CacheBuster] Done. Hard reloading...');
+          window.location.reload(true);
+          return;
         }
 
-        localStorage.setItem('app_version', EXPECTED_VERSION);
-        console.log("Cleanup complete. Reloading...");
-        
-        // Remove the query param and reload
-        if (forceClear) {
-          window.location.href = window.location.origin + window.location.pathname;
-        } else {
-          window.location.reload();
-        }
+        localStorage.setItem('__app_cache_v__', newVersion);
+        console.log('[CacheBuster] Version ' + newVersion + ' OK. No cleanup needed.');
+      } catch (e) {
+        console.warn('[CacheBuster] Could not run version check:', e);
       }
     })();
 
@@ -249,7 +255,7 @@
 
   <script>
 
-    var serviceWorkerVersion = '"1622624617" /* Flutter's service worker is deprecated and will be removed in a future Flutter release. */';
+    var serviceWorkerVersion = '"1426177570" /* Flutter's service worker is deprecated and will be removed in a future Flutter release. */';
 
     window.addEventListener('load', function (ev) {
       // Modern 2026 Flutter Initialization
