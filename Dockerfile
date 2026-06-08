@@ -6,13 +6,13 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy the pre-built Flutter web files
 COPY . /usr/share/nginx/html
 
-# Remove Dockerfile and nginx.conf from web directory (not needed there)
-RUN rm -f /usr/share/nginx/html/Dockerfile
+# Remove Dockerfile, nginx.conf, and docker-compose.yml from web directory (not needed there)
+RUN rm -f /usr/share/nginx/html/Dockerfile /usr/share/nginx/html/nginx.conf /usr/share/nginx/html/docker-compose.yml /usr/share/nginx/html/.dockerignore
 
 # Copy the custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# Expose port 3000
 EXPOSE 3000
 
 # Start Nginx
