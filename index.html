@@ -213,7 +213,7 @@
 
 
   <!-- Flutter bootstrap -->
-  <script src="flutter_bootstrap.js?v=1"></script>
+  <script src="flutter_bootstrap.js"></script>
 
   <script>
 
@@ -300,7 +300,7 @@
         onEntrypointLoaded: async function (engineInitializer) {
 
           const appRunner = await engineInitializer.initializeEngine({
-            renderer: "skwasm",
+            renderer: "canvaskit",
             useColorEmoji: true
           });
 
