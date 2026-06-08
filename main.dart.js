@@ -125317,7 +125317,7 @@ s=$.IF()
 r=A.bFL(B.aS,p,p,B.h7,B.e8)
 q=A.ac(a)
 if(!B.VW.aq("Inter"))A.U(A.cq("No font family by name 'Inter' was found."))
-return new A.UC(s.a,this.a,"Riverport Dashboard",A.a5d(p,r,B.e8,A.bAT(q.ok),!0),!1,new A.b1I(),p)},
+return new A.UC(s.a,this.a,"NextPrime",A.a5d(p,r,B.e8,A.bAT(q.ok),!0),!1,new A.b1I(),p)},
 $S:959}
 A.aL8.prototype={
 wu(a){var s=$.bEP()
