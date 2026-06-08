@@ -121583,7 +121583,7 @@ va(a,b){if(b)return $.H4().xu(a)
 return a},
 yt(){var s=0,r=A.q(t.H),q,p=this,o,n
 var $async$yt=A.m(function(a,b){if(a===1)return A.n(b,r)
-for(;;)switch(s){case 0:o=B.e.fe(p.z.a.a)
+for(;;)switch(s){case 0:o=B.e.fe(p.z.a.a).toLowerCase()
 n=B.e.fe(p.Q.a.a)
 if(o.length===0||n.length===0){p.c.ab(t.J).f.dr(B.a2w)
 s=1
