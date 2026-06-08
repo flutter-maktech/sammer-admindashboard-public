@@ -21,11 +21,14 @@ RUN flutter config --enable-web
 # Set working directory
 WORKDIR /app
 
-# Copy the app source code
-COPY . .
+# Copy pubspec files first (for better layer caching)
+COPY pubspec.yaml pubspec.lock ./
 
 # Get dependencies
 RUN flutter pub get
+
+# Copy the rest of the app source code
+COPY . .
 
 # Build the app
 # Use date to set APP_VERSION as was done in nixpacks.toml
