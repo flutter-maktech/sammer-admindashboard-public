@@ -41,7 +41,9 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -100,8 +102,31 @@
       animation: softPulse 2s ease-in-out infinite;
     }
 
-    @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-    @keyframes softPulse { 0%, 100% { transform: scale(0.85); opacity: 0.2; } 50% { transform: scale(1.15); opacity: 0.6; } }
+    @keyframes floatLogo {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-12px);
+      }
+    }
+
+    @keyframes softPulse {
+
+      0%,
+      100% {
+        transform: scale(0.85);
+        opacity: 0.2;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 0.6;
+      }
+    }
 
     /* ── Typography ── */
     .brand-name {
@@ -144,8 +169,13 @@
     }
 
     @keyframes slideProgress {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
     }
 
     /* ── Footer ── */
@@ -181,125 +211,122 @@
   </div>
 
 
+
+  <!-- Flutter bootstrap -->
+  <script src="flutter_bootstrap.js?v=1"></script>
+
   <script>
 
-    // ── Universal Cache Buster ──
-    // Works on ALL browsers (first visit & returning visits).
-    // Bypasses Service Worker cache by adding a timestamp to the fetch URL.
     (async function () {
-      try {
-        // Bypass SW cache with timestamp query param — forces a network fetch
-        const resp = await fetch('flutter_bootstrap.js?_v=' + Date.now(), { cache: 'no-store' });
-        const text = await resp.text();
 
-        // Hash first 2000 chars (fast, reliable fingerprint)
+      const VERSION_KEY = "__APP_VERSION__";
+
+      try {
+
+        const response = await fetch(
+          "flutter_bootstrap.js?v=" + Date.now(),
+          { cache: "no-store" }
+        );
+
+        const text = await response.text();
+
         let hash = 0;
-        for (let i = 0; i < Math.min(text.length, 2000); i++) {
+
+        for (let i = 0; i < text.length; i++) {
           hash = ((hash << 5) - hash) + text.charCodeAt(i);
           hash |= 0;
         }
-        const newVersion = String(hash);
-        const storedVersion = localStorage.getItem('__nexprime_v__');
 
-        // ✅ KEY FIX: No "storedVersion &&" guard — clears cache even on first visit
-        // This ensures new browsers, incognito, and other users always get fresh assets
-        if (storedVersion !== newVersion) {
-          console.log('[Cache] Version changed: ' + storedVersion + ' → ' + newVersion + '. Cleaning...');
+        const newVersion = hash.toString();
+        const oldVersion = localStorage.getItem(VERSION_KEY);
 
-          // 1. Unregister ALL Service Workers first
-          if ('serviceWorker' in navigator) {
+        if (oldVersion !== newVersion) {
+
+          console.log("[CACHE] New version detected");
+
+          // unregister service workers
+          if ("serviceWorker" in navigator) {
             const regs = await navigator.serviceWorker.getRegistrations();
-            await Promise.all(regs.map(r => r.unregister()));
+            for (const reg of regs) {
+              await reg.unregister();
+            }
           }
 
-          // 2. Clear ALL Cache Storage entries
-          if ('caches' in window) {
-            const names = await caches.keys();
-            await Promise.all(names.map(n => caches.delete(n)));
+          // clear caches
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            for (const key of keys) {
+              await caches.delete(key);
+            }
           }
 
-          // 3. Clear session data
           sessionStorage.clear();
+          localStorage.setItem(VERSION_KEY, newVersion);
 
-          // 4. Save new version & hard reload (bypasses browser cache)
-          localStorage.setItem('__nexprime_v__', newVersion);
-          console.log('[Cache] Cleaned. Hard reloading...');
-          window.location.reload(true);
+          window.location.replace(
+            window.location.pathname + "?v=" + Date.now()
+          );
+
           return;
         }
 
-        console.log('[Cache] Up to date (' + newVersion + '). No cleanup needed.');
       } catch (e) {
-        console.warn('[Cache] Version check failed:', e);
+        console.log("[CACHE ERROR]", e);
       }
+
     })();
 
+    // remove loader
     function removeLoader() {
       const loader = document.getElementById("loader");
       if (loader) {
-        loader.style.transition = "opacity 0.4s ease, transform 0.4s ease";
         loader.style.opacity = "0";
         loader.style.transform = "scale(0.95)";
         setTimeout(() => loader.remove(), 400);
       }
     }
 
-    // ✅ Modern reliable way
-    window.addEventListener("load", function () {
-      setTimeout(removeLoader, 1500); // fallback safety
-    });
-
-    // ✅ Try Flutter event (if available)
     window.addEventListener("flutter-first-frame", removeLoader);
-  </script>
 
-  <!-- Flutter bootstrap -->
-  <script src="flutter_bootstrap.js" async></script>
+    window.addEventListener("load", function () {
 
-  <script>
-
-    var serviceWorkerVersion = '"1012939972" /* Flutter's service worker is deprecated and will be removed in a future Flutter release. */';
-
-    window.addEventListener('load', function (ev) {
-      // Modern 2026 Flutter Initialization
       _flutter.loader.load({
+
         serviceWorker: {
           serviceWorkerUrl: "custom_service_worker.js",
-          serviceWorkerVersion: serviceWorkerVersion,
-          timeout: 30000,
+          timeout: 30000
         },
+
         onEntrypointLoaded: async function (engineInitializer) {
 
           const appRunner = await engineInitializer.initializeEngine({
-            renderer: "skwasm",
-            useColorEmoji: true,
+            renderer: "canvaskit",
+            useColorEmoji: true
           });
 
-          // Smoothly remove your custom HTML loader
-          const loader = document.getElementById("loader");
-          if (loader) {
-            loader.style.opacity = '0';
-            setTimeout(() => loader.remove(), 400);
-          }
+          removeLoader();
 
           await appRunner.runApp();
         }
+
       });
+
     });
 
-    // Communication for manual updates
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data === 'reload-button-pressed') {
+    navigator.serviceWorker?.addEventListener(
+      "message",
+      (event) => {
+        if (event.data?.type === "SW_UPDATED") {
+          console.log("[SW] Update detected → reloading...");
           window.location.reload();
         }
-        if (event.data?.type === 'SW_UPDATED') {
-          console.log('New version detected, reloading...');
-          window.location.reload(true);
-        }
-      });
-    }
+      }
+    );
+
   </script>
+
+
+
 
 </body>
 
