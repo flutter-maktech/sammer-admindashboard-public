@@ -1,51 +1,60 @@
-importScripts('flutter_service_worker.js');
+// custom_service_worker.js (CLEAN PRODUCTION VERSION)
 
-const CUSTOM_CACHE_NAME = 'mak-finflow-custom-v1';
+const CACHE_PREFIX = "nexprime-cache";
 
-self.addEventListener('install', (event) => {
-    // Force new SW to activate immediately, don't wait for old tabs to close
+self.addEventListener("install", (event) => {
     self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
     event.waitUntil(
         (async () => {
-            // Delete ALL old caches on every new deployment
+
+            console.log("[SW] Activating & clearing cache...");
+
             const cacheNames = await caches.keys();
+
             await Promise.all(
-                cacheNames
-                    .filter(name => name !== CUSTOM_CACHE_NAME)
-                    .map(name => {
-                        return caches.delete(name);
-                    })
+                cacheNames.map((name) => caches.delete(name))
             );
-            // Take control of all open tabs immediately
+
             await self.clients.claim();
 
-            // Tell all open tabs to hard reload
-            const clients = await self.clients.matchAll({ type: 'window' });
-            clients.forEach(client => {
-                client.postMessage({ type: 'SW_UPDATED' });
+            const clients = await self.clients.matchAll({
+                type: "window",
+                includeUncontrolled: true
             });
+
+            clients.forEach((client) => {
+                client.postMessage({
+                    type: "SW_UPDATED"
+                });
+            });
+
+            console.log("[SW] Activated successfully");
         })()
     );
 });
 
-self.addEventListener('message', (event) => {
-    if (event.data?.type === 'SKIP_WAITING') {
+self.addEventListener("message", (event) => {
+    if (event.data?.type === "SKIP_WAITING") {
         self.skipWaiting();
     }
 });
 
-self.addEventListener('fetch', (event) => {
-    if (event.request.method !== 'GET') return;
-    
-    // Skip caching for API calls to make sure they always fetch fresh
-    if (event.request.url.includes('/api/')) return;
+self.addEventListener("fetch", (event) => {
+
+    if (event.request.method !== "GET") return;
+
+    // NEVER cache API calls
+    if (event.request.url.includes("/api/")) return;
 
     event.respondWith(
-        fetch(event.request).catch(() => caches.match(event.request))
-        // ↑ Network FIRST — only fall back to cache if offline
-        // This ensures users always get fresh assets when online
+        fetch(event.request, {
+            cache: "no-store"
+        }).catch(async () => {
+            const cached = await caches.match(event.request);
+            return cached || Response.error();
+        })
     );
 });
